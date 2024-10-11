@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from.models import Task
@@ -8,7 +7,7 @@ from rest_framework.views import APIView # For Class Based Views
 from rest_framework import generics # For Generic views
 from rest_framework import generics,mixins # For Mixins
 from rest_framework import viewsets
-
+from rest_framework.permissions import AllowAny
 '''
 #Function Based Views
 
@@ -44,12 +43,12 @@ def task_detail(request,pk):
     elif request.method =='DELETE':
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-'''
 
-'''
+
 #Class Based Views
 
 class TaskListAPIView(APIView):
+    permission_classes = [AllowAny]
 
     def get(self,request):
         tasks=Task.objects.all()
@@ -66,10 +65,9 @@ class TaskListAPIView(APIView):
 class TaskDetailAPIView(APIView):
     
     def get_task(self,pk):
-        try:
-            return Task.objects.get(pk=pk)
-        except Task.DoesNotExist:
-            raise Http404
+        return Task.objects.get(pk=pk)
+        
+            
     
     def get(self,request,pk):
         task= self.get_task(pk)
@@ -89,7 +87,7 @@ class TaskDetailAPIView(APIView):
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-'''
+
 
 '''
 #Generic Views
@@ -102,9 +100,9 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
 
-'''
 
 '''
+
 #Mixins
 
 class TaskListCreateView(mixins.ListModelMixin,mixins.CreateModelMixin,generics.GenericAPIView):
@@ -130,7 +128,7 @@ class TaskRetrieveUpdateDestroyView(mixins.RetrieveModelMixin,mixins.UpdateModel
     def delete(self,request,*args,**kwargs):
         return self.delete(request,*args,**kwargs)
     
-'''
+
 
 #ViewSets
 
@@ -138,3 +136,4 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
 
+'''
