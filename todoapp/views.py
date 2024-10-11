@@ -8,6 +8,7 @@ from rest_framework import generics # For Generic views
 from rest_framework import generics,mixins # For Mixins
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
+from drf_yasg.utils import swagger_auto_schema
 '''
 #Function Based Views
 
@@ -43,18 +44,25 @@ def task_detail(request,pk):
     elif request.method =='DELETE':
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
+'''
 
 #Class Based Views
 
 class TaskListAPIView(APIView):
     permission_classes = [AllowAny]
+    @swagger_auto_schema(
+        responses={200: TaskSerializer(many=True)}
+    )
 
     def get(self,request):
         tasks=Task.objects.all()
         serializer=TaskSerializer(tasks,many=True)
         return Response(serializer.data)
-    
+    @swagger_auto_schema(
+        request_body=TaskSerializer,
+        responses={201: TaskSerializer, 400: "Bad Request"}
+    )
+
     def post(self,request):
         serializer= TaskSerializer(data=request.data)
         if serializer.is_valid():
@@ -63,7 +71,9 @@ class TaskListAPIView(APIView):
         return Response(serializer.errors)
     
 class TaskDetailAPIView(APIView):
-    
+    @swagger_auto_schema(
+        responses={200: TaskSerializer(), 404: 'Not Found'}
+    )
     def get_task(self,pk):
         return Task.objects.get(pk=pk)
         
@@ -73,7 +83,10 @@ class TaskDetailAPIView(APIView):
         task= self.get_task(pk)
         serializer= TaskSerializer(task)
         return Response(serializer.data)
-    
+    @swagger_auto_schema(
+        request_body=TaskSerializer,
+        responses={200: TaskSerializer, 400: "Bad Request", 404: "Not Found"}
+    )
     def put(self,request,pk):
         task=self.get_task(pk)
         serializer= TaskSerializer(task,data=request.data)
@@ -81,7 +94,9 @@ class TaskDetailAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
-    
+    @swagger_auto_schema(
+        responses={204: 'No Content', 404: 'Not Found'}
+    )
     def delete(self,request,pk):
         task=self.get_task(pk)
         task.delete()
@@ -101,7 +116,7 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TaskSerializer
 
 
-'''
+
 
 #Mixins
 
